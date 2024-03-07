@@ -26,7 +26,7 @@ int main()
       cin >> p[i].notas[j];
       p[i].media += p[i].notas[j];
     }
-    
+
     p[i].media /= 4.0;
   }
 
