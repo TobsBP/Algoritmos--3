@@ -1,72 +1,100 @@
 #include <iostream>
 #include <list>
-
 using namespace std;
 
-struct Edge {
-    int destination;
-    int weight;
+#define INT_MAX 99999
+
+struct no
+{
+    int origem;
+    int destino;
+    int peso;
 };
 
-const int MAX_INT = 1000000; // Um valor grande para representar infinito
+void mst_prim(list<no> adj[], int nVertices, int start)
+{
+    bool intree[nVertices];
+    int distance[nVertices];
+    int parent[nVertices];
 
-void MST_PRIM(list<Edge>* G, int numVertices, int start) {
-    bool* intree = new bool[numVertices];
-    int* distance = new int[numVertices];
-    int* parent = new int[numVertices];
-
-    for (int u = 0; u < numVertices; ++u) {
+    for (int u = 0; u < nVertices; u++)
+    {
         intree[u] = false;
-        distance[u] = MAX_INT;
+        distance[u] = INT_MAX;
         parent[u] = -1;
     }
 
     distance[start] = 0;
     int v = start;
 
-    while (!intree[v]) {
+    while (intree[v] == false)
+    {
         intree[v] = true;
-
-        for (const Edge& p : G[v]) {
-            int destination = p.destination;
-            int weight = p.weight;
-
-            if (distance[destination] > weight && !intree[destination]) {
-                distance[destination] = weight;
-                parent[destination] = v;
+        list<no>::iterator p;
+        for(p = adj[v].begin(); p != adj[v].end(); ++p)
+        {
+            int destino = p->destino;
+            int weight = p->peso;
+            if(distance[destino] > weight && intree[destino] == false)
+            {
+                distance[destino] = weight;
+                parent[destino] = v;
             }
         }
-
         v = 0;
-        int dist = MAX_INT;
-
-        for (int u = 0; u < numVertices; ++u) {
-            if (!intree[u] && dist > distance[u]) {
+        int dist = INT_MAX;
+        for (int u = 0; u < nVertices; u++)
+        {
+            if(intree[u] == false && dist > distance[u])
+            {
                 dist = distance[u];
                 v = u;
             }
         }
     }
-
-    delete[] intree;
-    delete[] distance;
-    delete[] parent;
+    cout << "Arvore Geradora Minima:" << endl;
+    int peso_total = 0;
+    for(int i = 0; i < nVertices; i++)
+    {
+        if(parent[i] != -1)
+        {
+            cout << parent[i] << " " << i << endl;
+            peso_total += distance[i];
+        }
+    }
+    cout << "Custo: " << peso_total << endl; 
 }
 
-int main() {
-    // Exemplo de uso
-    int numVertices = 5;
-    list<Edge>* graph = new list<Edge>[numVertices];
+void prim(list<no> adj[], int nVertices, int start)
+{
+    mst_prim(adj, nVertices, start);
+}
 
-    // Adicione as arestas e pesos aqui
-    graph[0].push_back({1, 2}); // Exemplo: Aresta de 0 para 1 com peso 2
-    graph[1].push_back({0, 2}); // Se o grafo for não direcionado, adicione a aresta inversa
-    // Adicione outras arestas e pesos conforme necessário
+int main()
+{
+    int nVertices, orientado, start;
 
-    int startVertex = 0;
-    MST_PRIM(graph, numVertices, startVertex);
+    cin >> nVertices >> orientado >> start;
 
-    delete[] graph;
-    
+    list<no> *adj = new list<no>[nVertices];
+    int origem, destino, peso;
+    while(cin >> origem >> destino >> peso && origem != -1 && destino != -1 && peso != -1)
+    {
+        no aux;
+        aux.origem = origem;
+        aux.destino = destino;
+        aux.peso = peso;
+        adj[origem].push_back(aux);
+        if(orientado == 0)
+        {
+            aux.origem = destino;
+            aux.destino = origem;
+            adj[destino].push_back(aux);
+        }
+    }
+
+    prim(adj, nVertices, start);
+
+    delete [] adj; 
     return 0;
 }
