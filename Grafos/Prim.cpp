@@ -11,41 +11,43 @@ struct no
     int peso;
 };
 
-void mst_prim(list<no> adj[], int nVertices, int start)
+void prim(list<no>adj[], int nVertices, int start)
 {
     bool intree[nVertices];
     int distance[nVertices];
     int parent[nVertices];
+    int v, u, destino, weight;
+    int dist;
 
-    for (int u = 0; u < nVertices; u++)
+    for (u = 0; u < nVertices; u++)
     {
         intree[u] = false;
         distance[u] = INT_MAX;
         parent[u] = -1;
     }
-
+    
     distance[start] = 0;
-    int v = start;
-
+    v = start;
+    
     while (intree[v] == false)
     {
         intree[v] = true;
         list<no>::iterator p;
-        for(p = adj[v].begin(); p != adj[v].end(); ++p)
+        for (p = adj[v].begin(); p != adj[v].end(); p++)
         {
-            int destino = p->destino;
-            int weight = p->peso;
-            if(distance[destino] > weight && intree[destino] == false)
+            destino = p->destino;
+            weight = p->peso;
+            if (distance[destino] > weight && intree[destino] == false)
             {
                 distance[destino] = weight;
                 parent[destino] = v;
             }
         }
         v = 0;
-        int dist = INT_MAX;
-        for (int u = 0; u < nVertices; u++)
+        dist = INT_MAX;
+        for (u = 0; u < nVertices; u++)
         {
-            if(intree[u] == false && dist > distance[u])
+            if (intree[u] == false && dist> distance[u])
             {
                 dist = distance[u];
                 v = u;
@@ -53,21 +55,18 @@ void mst_prim(list<no> adj[], int nVertices, int start)
         }
     }
     cout << "Arvore Geradora Minima:" << endl;
-    int peso_total = 0;
-    for(int i = 0; i < nVertices; i++)
+    int custo = 0;
+    for (int i = 0; i < nVertices; i++)
     {
-        if(parent[i] != -1)
+        if (parent[i] != -1)
         {
             cout << parent[i] << " " << i << endl;
-            peso_total += distance[i];
+            custo += distance[i];
         }
     }
-    cout << "Custo: " << peso_total << endl; 
-}
 
-void prim(list<no> adj[], int nVertices, int start)
-{
-    mst_prim(adj, nVertices, start);
+    cout << "Custo: " << custo << endl;
+    
 }
 
 int main()

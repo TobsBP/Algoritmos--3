@@ -28,7 +28,7 @@ int main()
   int num_caminhos, origem, destino, peso = 1, i;
   list<no>::iterator p;
   list<no> adj[100];
-  int orientado = 1;  // = 0 -> não orientado / = 1 orientado
+  int orientado = 0;  // = 0 -> não orientado / = 1 orientado
   int num_cidade;
 
   cin >> num_caminhos >> num_cidade;
