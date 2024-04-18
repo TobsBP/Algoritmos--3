@@ -64,7 +64,6 @@ void prim(list<no>adj[], int nVertices, int start)
             custo += distance[i];
         }
     }
-
     cout << "Custo: " << custo << endl;
     
 }
