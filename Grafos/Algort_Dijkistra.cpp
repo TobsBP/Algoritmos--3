@@ -1,116 +1,78 @@
-#include <iostream>
-#include <list>
+bool bfs_poder_acumulado(Habilidade adj[], int vertices, int start, float poder_acumulado[]){
+	
+	bool visited[vertices];
+	list<int> to_visit_queue;
+	
+	for(int i=0;i<vertices;i++){
+		visited[i] = false;
+	}
+	
+	visited[start] = true;
+	to_visit_queue.push_back(start);
+	
+	while(!to_visit_queue.empty()){
+		int curr = to_visit_queue.front();
+		to_visit_queue.pop_front();
+		list<no>::iterator p;
+		for(p=adj[curr].upgrades.begin();p!=adj[curr].upgrades.end();p++){
+			int dest = p->dest;
+			if(!visited[dest]){
+				visited[dest] = true;
+				to_visit_queue.push_back(dest);
+				poder_acumulado[dest] += poder_acumulado[curr];
+			}				
+		}
+			
+	}
+	return true;	
+}
 
-using namespace std;
-
-#define INT_MAX 100000
-
-struct no
+void shortest_path_dijkstra(Habilidade adj[], float poder_acumulado[], int vertices, int start)
 {
-  int peso;
-  int destino;
-  int origem;
-};
+  bool intree[vertices];
+  int distance[vertices], parent[vertices];
 
-void dijkstra(list<no> adj[], int nVertices, int start, int end)
-{
-  bool intree[nVertices];
-  int distance[nVertices];
-  int parent[nVertices];
-  list<no>::iterator p;
-  int v, weight;
-  int dist, destino;
-
-  for (int u = 0; u < nVertices; u++)
+  for (int u = 0; u < vertices; u++)
   {
     intree[u] = false;
     distance[u] = INT_MAX;
     parent[u] = -1;
   }
-
   distance[start] = 0;
-  v = start;
-
+  int v = start;
   while (intree[v] == false)
   {
     intree[v] = true;
-    for (p = adj[v].begin(); p != adj[v].end(); p++)
+    list<no>::iterator p;
+    for (p = adj[v].upgrades.begin(); p != adj[v].upgrades.end(); p++)
     {
-      destino = p->destino;
-      weight = p->peso;
-      if (distance[destino] > distance[v] + weight)
+      int dest = p->dest;
+      int weight = p->custo;
+      if (distance[dest] > distance[v] + weight)
       {
-        distance[destino] = distance[v] + weight;
-        parent[destino] = v;
+        distance[dest] = distance[v] + weight;
+        parent[dest] = v;
       }
     }
-
     v = 0;
-    dist = INT_MAX;
-
-    for (int u = 0; u < nVertices; u++)
+    int dist = INT_MAX, poder = 0;
+    for (int u = 0; u < vertices; u++)
     {
-      if (intree[u] == false && dist > distance[u])
+      if (intree[u] == false && distance[u] < dist)
       {
         dist = distance[u];
         v = u;
       }
     }
   }
-
-  // Imprimir o menor caminho
-  list<int> caminho;
-  int atual = end;
-  while (atual != -1) {
-    caminho.push_front(atual); // Dependendo da orgem muda o push
-    atual = parent[atual];
-  }
-
-  list<int>::iterator it;
-  for (it = caminho.begin(); it != caminho.end(); it++) {
-    cout << *it << " ";
-  }
-  cout << endl;
-
-  // Custo para ir do vertice start até o end
-  cout << "Custo: " << distance[end] << endl;
-}
-
-int main()
-{
-  int nVertices, orientado, destino;
-  int origem, peso, incial, end;
-
-  // Entrada
-  cin >> nVertices >> orientado >> incial >> end;
-
-  // Alocando a lista dinamicamente
-  list<no> *adj = new list<no>[nVertices];
-
-  // Criando a lista de adj
-  while (cin >> origem >> destino >> peso && origem != -1 && destino != -1 && peso != -1)
+  int dist = INT_MAX;
+  for (int u = 0; u < vertices; u++)
   {
-    no aux;
-
-    aux.destino = destino;
-    aux.origem = origem;
-    aux.peso = peso;
-    adj[origem].push_back(aux);
-
-    if (orientado == 0)
+    if (intree[u] == true && distance[u] < dist)
     {
-      aux.origem = destino;
-      aux.destino = origem;
-      adj[destino].push_back(aux);
+      dist = distance[u];
     }
   }
-
-
-  // Chama a função
-  dijkstra(adj, nVertices, incial, end);
-
-  // Libera a memoria
-  delete[] adj;
-
-  return 0;
+  
+  cout << dist << endl;
 }
