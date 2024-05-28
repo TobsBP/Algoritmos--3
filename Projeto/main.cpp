@@ -2,9 +2,10 @@
 #include <string>
 #include <limits>
 #include <clocale>
+#include <list>
 using namespace std;
 
-/*		INTEGRANTES DO GRUPO
+/*      INTEGRANTES DO GRUPO
 Tobias Bueno Pereira - 418 - GES
 Rodrigo Armengol de Oliveira - 294 - GES
 Igor de Araújo Fonseca - 479 - GES
@@ -12,183 +13,227 @@ Thiago Damas Ferreira Silva - 214 - GEC
 André Rocha de Mesquita - 2017 - GEC
 */
 
-#define quantidade 1000
-string cidades[70];
-int num_city;
+#define quantidade 100
 
-struct Pokemon
+struct aresta
 {
-    string pokebola;
-    string local;
-    string tipo;
-    string name;
-    int num;
+    int destino;
+    int peso;
 };
 
-Pokemon cadastro_poke() // função para o cadastro dos pokemons
+struct no
 {
-	setlocale(LC_ALL, "Portugese");
-    Pokemon novo;
-    cout << "------------------------Menu de cadastro----------------------------" << endl;
-    cout << "Insira o nome do Pokemon: ";
-    do
-    {
-        getline(cin >> ws, novo.name);
-        if (novo.name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ") != string::npos)
-        {
-            cout << "Nome inválido. Use apenas letras." << endl;
-            novo.name = ""; // Reinicia o nome para tentar novamente
-        }
-    } while (novo.name.empty());
+    bool centro_pokemon;
+    string nome;
+    list<aresta> arestas;
+};
 
-    cout << "Insira o tipo do Pokemon " << novo.name << ": ";
-    do
-    {
-        getline(cin >> ws, novo.tipo);
-        if (novo.tipo.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ") != string::npos)
-        {
-            cout << "Tipo inválido. Use apenas letras." << endl;
-            novo.tipo = ""; // Reinicia o tipo para tentar novamente
-        }
-    } while (novo.tipo.empty());
-
-    cout << "Insira o número do Pokemon: ";
-    while (!(cin >> novo.num) || novo.num <= 0)
-    {
-        cout << "Número inválido. Insira um número positivo: ";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    cout << "Insira a localização do pokemon: ";
-    do
-    {
-        getline(cin >> ws, novo.local);
-    } while (novo.local.empty());
-
-    cout << "Insira a pokebola que o pokemon foi capturado: ";
-    getline(cin >> ws, novo.pokebola);
-
-    cout << "------------------------------------------------------------------" << endl;
-
-    return novo;
+void adicionarAresta(no cidades[], int origem,int destino, int peso)
+{
+    cidades[origem].arestas.push_back({destino, peso});
 }
 
-void cadastro_city() // cadastro de cidades
+void cadastro_city(no cidades[], int num_cidades) // cadastro de cidades
 {
-	setlocale(LC_ALL, "Portugese");
-    cout << "----------------------Cadastro de cidades--------------------------" << endl;
-    cout << "Quantas cidades gostaria de cadastrar? :";
+    string test;
+    list<no>:: iterator p;
+    int v, peso, num_vizinhas;
 
-    while (!(cin >> num_city))
-    {
-        cout << "Insira apenas números!" << endl;
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // limpa buffer de entrada
-    }
-    cin.ignore(); // para limpar o buffer de entrada
+    setlocale(LC_ALL, "Portugese");
+    cout << "----------------------Cadastrar cidade--------------------------" << endl;
 
-    for (int i = 0; i < num_city; i++)
+    for (int i = 0; i < num_cidades; i++)
     {
-        cout << "Digite o nome da cidade " << i + 1 << ": ";
+        cout << "Digite o nome da cidade: ";
         do
         {
-            getline(cin >> ws, cidades[i]);
-        } while (cidades[i].empty());
+            getline(cin >> ws, cidades[i].nome);
+        } while (cidades[i].nome.empty());
+
+        cout << "Essa cidade tem um centro Pokemon? (Sim/Não)" << endl;
+        do
+        {
+            getline(cin >> ws, test);
+        } while (test.empty());
+
+        if (test == "Sim"){
+            cidades[i].centro_pokemon = true;
+        }else if(test == "Não"){
+            cidades[i].centro_pokemon= false;
+        }
+
+        cout << "Essa cidade tem alguma cidade vizinha? (Sim/Não)" << endl;
+        do
+        {
+            getline(cin >> ws, test);
+        } while (test.empty());
+
+        if (test == "Sim")
+        {
+            cout << "Digite a quantidade de cidades vizinhas: ";
+            cin >> num_vizinhas;
+
+            cout << "Digite respectivamente o destino, e a distância: ";
+            for (int x = 0; x < num_vizinhas; x++)
+            {
+                cin >> v >> peso;
+                adicionarAresta(cidades, i, v, peso);
+            }
+        }
+        else if(test == "Não"){
+            cidades[i].arestas.push_back({0, 0});
+        }
     }
     cout << "-------------------------------------------------------------------" << endl;
 }
 
 void exibir_menu()
 {
-	setlocale(LC_ALL, "Portugese");
+    setlocale(LC_ALL, "Portugese");
     cout << "------------------------Selecione uma opção-----------------------" << endl;
-    cout << "1 - Inserir Pokemon\n2 - Inserir cidades\n3 - Mostrar informações do pokemon\n4 - Exibir cidades\n5 - Sair" << endl;
+    cout << "1 - Inserir cidades\n2 - Exibir cidades\n3 - Cadastrar Pokemon\n4 - Exibir Pokemons\n5 - Sair" << endl;
     cout << "------------------------------------------------------------------" << endl;
 }
 
-void exibir_pokemon(Pokemon registro) // função para mostrar os pokemons
+void exibir_city(no cidades[], int num_cidades)
 {
-	setlocale(LC_ALL, "Portugese");
-    cout << "----------------------Informações do Pokemon-----------------------" << endl;
-    cout << "Quem é esse Pokemon? " << registro.name << endl;
-    cout << "Tipo: " << registro.tipo << endl;
-    cout << "Pokebola utilizada: " << registro.pokebola << endl;
-    cout << "Número do Pokemon: " << registro.num << endl;
-    cout << "Localização do Pokemon: " << registro.local << endl;
-    cout << "-------------------------------------------------------------------" << endl;
-}
+    cout << "----------------------Exibir Grafo--------------------------" << endl;
+    list<aresta>::iterator p;
 
-void exibir_city() // exibe a cidade
-{
-	setlocale(LC_ALL, "Portugese");
-    cout << "----------------------Cidades Cadastradas--------------------------" << endl;
-    for (int i = 0; i < num_city; i++)
+    for (int i = 0; i < num_cidades; i++)
     {
-        cout << i + 1 << ". " << cidades[i] << endl;
+        cout << "Cidade: " << cidades[i].nome << endl;
+        cout << "Centro Pokemon: ";
+        cout << (cidades[i].centro_pokemon ? "Sim" : "Não") << endl;
+
+        cout << "Cidades vizinhas: ";
+
+        for (p = cidades[i].arestas.begin(); p != cidades[i].arestas.end(); p++)
+        {
+            cout << p->destino << " " << p->peso << endl;
+        }
     }
     cout << "-------------------------------------------------------------------" << endl;
 }
 
-void choose() // menu de opções
+struct Pokemon
 {
-	setlocale(LC_ALL, "Portugese");
-    int option;
-    Pokemon registro;
-    bool pokemon_cadastrado = false;
+    string nome;
+    string tipo;
+    int code; 
+};
+
+struct treenode
+{
+    Pokemon info;
+    treenode *left;
+    treenode *right;
+};
+
+typedef treenode *treenodeptr;
+
+treenodeptr insert(treenodeptr &p, Pokemon new_pokemon)
+{
+    if (p == NULL)
+    {
+        p = new treenode;
+        p->info = new_pokemon;
+        p->left = NULL;
+        p->right = NULL;
+    }
+    else if (new_pokemon.nome < p->info.nome)
+        p->left = insert(p->left, new_pokemon);
+    else if (new_pokemon.nome > p->info.nome)
+        p->right = insert(p->right, new_pokemon);
+
+    return p;
+}
+
+void mostraInfo(treenodeptr &arvore)
+{
+    cout << arvore->info.nome << endl;
+}
+
+void exib(treenodeptr &arvore)
+{
+    if (arvore != NULL)
+    {
+        exib(arvore->left);
+        mostraInfo(arvore);
+        exib(arvore->right);
+    }
+}
+
+void choose(no cidades[], treenodeptr arvore) // menu de opções
+{
+    setlocale(LC_ALL, "Portugese");
+    int option, num_cidades, count, i;
+    Pokemon new_pokemon;
 
     do
     {
         exibir_menu();
         cout << "Opção: ";
-        while (!(cin >> option) || option < 1 || option > 5)
-        {
-            cout << "Opção inválida. Apenas números entre 1 e 5." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Opção: ";
-        }
+        cin >> option;
 
         switch (option)
         {
         case 1:
-            registro = cadastro_poke();
-            pokemon_cadastrado = true;
+            cout << "Digite a quantida de cidades que deseja cadastrar: ";
+            cin >> num_cidades;
+            cadastro_city(cidades, num_cidades);
             break;
         case 2:
-            cadastro_city();
+            exibir_city(cidades, num_cidades);
             break;
         case 3:
-            if (pokemon_cadastrado)
-                exibir_pokemon(registro);
-            else
-                cout << "Nenhum Pokemon cadastrado ainda." << endl;
-            break;
+            cout << "Digite a quantida de Pokemons que deseja cadastrar: ";
+            cin >> count;
+            for (i = 0; i < count; i++)
+            {   
+                cout << "Digite o nome do Pokemon: ";
+                getline(cin >> ws, new_pokemon.nome);
+                cout << "Digite o tipo do Pokemon: ";
+                getline(cin >> ws, new_pokemon.tipo);
+                cout << "Digite o codigo do Pokemon: ";
+                cin >> new_pokemon.code;
+                insert(arvore, new_pokemon);
+            }
         case 4:
-            exibir_city();
+            cout << "Exibir Pokemons cadastrados"<< endl;
+            exib(arvore);
+            break;
+        case 5:
             break;
         default:
             cout << "Opção inválida. Tente novamente." << endl;
             break;
         }
-
     } while (option != 5);
 
     cout << "-------------------------------------------------------------------" << endl;
     cout << "Programa finalizado com sucesso!!" << endl;
 }
 
+void tdestruir(treenodeptr &arvore)
+{
+    if (arvore != NULL)
+    {
+        tdestruir(arvore->left);        
+        tdestruir(arvore->right);
+        delete arvore;
+    }
+    arvore = NULL;
+}
+
 int main()
 {
-    choose();
+    no cidades[quantidade];
+    treenodeptr arvore = NULL;
+
+    choose(cidades, arvore);
+
+    tdestruir(arvore);
 
     return 0;
 }
-
-/*
-Tobias Bueno Pereira - 418 - ges
-Rodrigo armengol de Oliveira - 294 - ges
-Igor de Araújo Fonseca - 479 - ges
-Thiago damas Ferreira Silva - 214 - gec
-André Rocha mesquita - 2017 - gec
-*/
