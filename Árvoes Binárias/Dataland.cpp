@@ -1,5 +1,4 @@
 #include <iostream>
-
 using namespace std;
 
 struct treenode
@@ -86,55 +85,35 @@ int tremove(treenodeptr &raiz, int x)
 		return tremove(raiz->dir, x);
 }
 
-void emOrdem(treenodeptr arvore)
-{
-	if(arvore != NULL)
-	{
-		emOrdem(arvore->esq);
-		cout << arvore->info << " ";
-		emOrdem(arvore->dir);
-	}
-}
-
-void tDestruir(treenodeptr & arvore)
-{
-	if(arvore != NULL)
-	{
-		tDestruir(arvore->esq);
-		tDestruir(arvore->dir);
-		delete arvore;
-	}
-	arvore = NULL;
-}
-
 int main()
 {
-	int x;
-	int removeu;
-	int numbers = 0;
-	treenodeptr arvore = NULL;
-	
-	cin >> numbers;
-	while(numbers != 0)
-	{
+    treenodeptr arvore = NULL;
+    int i, N, x;
+    char op;
 
-		if(numbers != 0)
-			tinsert(arvore, numbers);
-	
-	    cin >> numbers;
-	}
-	
-	cin >> x; //numero a ser removido;
+    cin >> N;
 
-	do
-	{
-		removeu = tremove(arvore, x);
-	}
-	while(removeu == 0);
-	
-	emOrdem(arvore);
+    for (i = 1; i <= N; i++)
+    {
+        cin >> op >> x;
 
-	tDestruir(arvore);
+        switch (op)
+        {
+        case 'i':
+            tinsert(arvore, x);
+            break;
+        case 'r':
+            tremove(arvore, x);
+            break;
+        case 'b':
+            if(tsearch(arvore, x) == NULL)
+                cout << "Nao" << endl;
+            else
+                cout << "Sim" << endl;
+        default:
+            break;
+        }
+    }
 
-	return 0;
+    return 0;
 }
