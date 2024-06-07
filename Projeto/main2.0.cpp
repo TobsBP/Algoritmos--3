@@ -1,10 +1,9 @@
 #include <iostream>
-#include <climits>
 #include <string>
 #include <list>
 using namespace std;
 
-#define quantidade 100
+int MAX_CIDADES = 100;
 
 struct pokemon
 {
@@ -21,27 +20,19 @@ struct treenode
     treenode *right;
 };
 
-struct cidades
-{
-	bool centro_pokemon;
-	string nome;
+struct Aresta {
+    int destino;
+    int peso;
 };
- 
-struct no
-{
-	int destino;
-	int peso ;
-	cidades info;
- 
-	list<no> arestas;
+
+struct Cidade {
+    int codigo;
+    string nome;
+    bool CentroPokemon;
+    list<Aresta> adj; // Lista de adjacências usando a estrutura Aresta
 };
 
 typedef treenode *treenodeptr;
-
-void adicionarAresta(no cidades[], int origem, int destino, int peso)
-{
-	cidades[origem].arestas.push_back( {destino, 1});
-}
 
 void insert_nome(treenodeptr &arvore, pokemon new_pokemon)
 {
@@ -98,68 +89,6 @@ void tdestruir(treenodeptr &arvore)
     arvore = NULL;
 }
 
-void cadastro_city(no cidades[], int num_cidades) // cadastro de cidades
-{
-	string test;
-	list<no>:: iterator p;
-	int v, peso, num_vizinhas;
- 
-	setlocale(LC_ALL, "Portugese");
-	cout << "----------------------Cadastrar cidade--------------------------" << endl;
- 
-	for (int i = 0; i < num_cidades; i++)
-	{
-		cout << "Digite o nome da cidade: ";
-		do
-		{
-			getline(cin >> ws, cidades[i].info.nome);
-		}
-		while (cidades[i].info.nome.empty());
- 
-		cout << "Essa cidade tem um centro Pokemon? (Sim/Não)" << endl;
-		do
-		{
-			getline(cin >> ws, test);
-		}
-		while (test.empty());
- 
-		if (test == "Sim")
-		{
-			cidades[i].info.centro_pokemon = true;
-		}
-		else if(test == "Não")
-		{
-			cidades[i].info.centro_pokemon = false;
-		}
- 
-		cout << "Essa cidade tem alguma cidade vizinha? (Sim/Não)" << endl;
-		do
-		{
-			getline(cin >> ws, test);
-		}
-		while (test.empty());
- 
-		if (test == "Sim")
-		{
-			cout << "Digite a quantidade de cidades vizinhas: ";
-			cin >> num_vizinhas;
- 
-			cout << "Digite respectivamente o destino, e a distância: ";
-			for (int x = 0; x < num_vizinhas; x++)
-			{
-				cin >> v >> peso;
-				adicionarAresta(cidades, i, v, peso);
-			}
-		}
-		else if(test == "Não")
-		{
-			cidades[i].arestas.push_back( {0, 0});
-		}
-	}
-	cout << "-------------------------------------------------------------------" << endl;
- 
-}
-
 void menu()
 {
     setlocale(LC_ALL, "Portugese");
@@ -169,78 +98,10 @@ void menu()
     cout << "3 - Exibir Pokemons por nomes" << endl;
     cout << "4 - Exibir Pokemons por tipo" << endl;
     cout << "5 - Exibir quantos Pokemons tem de cada tipo" << endl;
-    cout << "0 - Sair" << endl;
+    cout << "6 - Cadastrar cidades" << endl;
+    cout << "7 - Menor Caminho ate um centro Pokemon" << endl;    
+	cout << "0 - Sair" << endl;
     cout << "--------------------------------------------------------------------" << endl;
-}
-
-void exibir_city(no cidades[], int num_cidades)
-{
-	cout << "----------------------Exibir Grafo--------------------------" << endl;
-	list<no>::iterator p;
- 
-	for (int i = 0; i < num_cidades; i++)
-	{
-		cout << "Cidade: " << cidades[i].info.nome << endl;
-		cout << "Centro Pokemon: ";
-		cout << (cidades[i].info.centro_pokemon ? "Sim" : "Não") << endl;
- 
-		cout << "Cidades vizinhas: ";
- 
-		for (p = cidades[i].arestas.begin(); p != cidades[i].arestas.end(); p++)
-		{
-			cout << p->destino << " " << p->peso << endl;
-		}
-	}
-	cout << "-------------------------------------------------------------------" << endl;
-}
-
-void shortest_path_dijkstra(no cidades [], int vertices, int start, int end)
-{
-	bool intree[vertices];
-	int distance[vertices], parent[vertices], saltos[vertices];
- 
-	for(int u = 0; u < vertices; u++)
-	{
-		intree[u] = false;
-		distance[u] = INT_MAX;
-		parent[u] = -1;
-	}
-		distance[start] = 0;
-		int v = start;
-		while(intree[v] == false)
-		{
-			intree[v] = true;
-			list<no>::iterator p;
-			for(p = cidades[v].arestas.begin(); p != cidades[v].arestas.end(); p++)
-			{
-				int dest = p->destino;
-				int weight = p->peso;
-				if(distance[dest] > distance[v] + weight)
-				{
-					distance[dest] = distance[v] + weight;
-					parent[dest] = v;
-				}
-			}
-			v = 0;
-			int dist = INT_MAX;
-			for(int u = 0; u < vertices; u++)
-			{
-				if(intree[u] == false && distance[u] < dist)
-				{
-					dist = distance[u];
-					v = u;
-				}
-			}
-		}
-		for(int i = 0; i < vertices ; i++)
-		{
-			if(cidades[i].info.centro_pokemon)
-			{
-				cout << distance[i] << " ";
-			}
-		}
- 
- 
 }
 
 treenodeptr search(treenodeptr arvore, string pokemon_nome)
@@ -255,14 +116,142 @@ treenodeptr search(treenodeptr arvore, string pokemon_nome)
 		return search(arvore -> right, pokemon_nome); 
 }
 
+void adicionarCidade(Cidade cidades[], int &numCidades, int codigo, string &nome, bool CentroPokemon) {
+    if (numCidades < MAX_CIDADES) {
+        cidades[numCidades++] = {codigo, nome, CentroPokemon};
+    } else {
+        cout << "Número máximo de cidades atingido." << endl;
+    }
+}
+
+void adicionarAresta(Cidade cidades[], int numCidades, int deCodigo, int paraCodigo, int peso) {
+    for (int i = 0; i < numCidades; ++i) {
+        if (cidades[i].codigo == deCodigo) {
+            cidades[i].adj.push_back({paraCodigo, peso});
+            break;
+        }
+    }
+}
+
+int encontrarIndiceCidade(Cidade cidades[], int numCidades, int codigo) {
+    for (int i = 0; i < numCidades; ++i) {
+        if (cidades[i].codigo == codigo)
+            return i;
+    }
+    return -1; // cidade não encontrada
+}
+
+void caminhoMaisCurtoDijkstra(Cidade cidades[], int numCidades, int codigoInicial) {
+    int vertices = numCidades;
+    bool intree[MAX_CIDADES] = {false};
+    int distancia[MAX_CIDADES];
+    int pai[MAX_CIDADES];
+
+    for (int i = 0; i < MAX_CIDADES; ++i) {
+        distancia[i] = 9999999;
+        pai[i] = -1;
+    }
+
+    int indiceInicial = encontrarIndiceCidade(cidades, numCidades, codigoInicial);
+    if (indiceInicial == -1) {
+        cout << "Cidade não encontrada" << endl;
+        return;
+    }
+
+    distancia[indiceInicial] = 0;
+    int v = indiceInicial;
+
+    while (!intree[v]) {
+        intree[v] = true;
+        list<Aresta>::iterator it;
+        for (it = cidades[v].adj.begin(); it != cidades[v].adj.end(); ++it) {
+            int indiceDestino = encontrarIndiceCidade(cidades, numCidades, it->destino);
+            if (distancia[indiceDestino] > distancia[v] + it->peso) {
+                distancia[indiceDestino] = distancia[v] + it->peso;
+                pai[indiceDestino] = v;
+            }
+        }
+
+
+        v = -1;
+        int dist = 9999999;
+        for (int u = 0; u < vertices; ++u) {
+            if (!intree[u] && distancia[u] < dist) {
+                dist = distancia[u];
+                v = u;
+            }
+        }
+        if (v == -1) break; // não há mais nós para processar
+    }
+
+    int dist_CPokemon = 9999999;
+    int indice_CPkemon = -1;
+    for (int u = 0; u < vertices; ++u) {
+        if (cidades[u].CentroPokemon && distancia[u] < dist_CPokemon) {
+            dist_CPokemon = distancia[u];
+            indice_CPkemon = u;
+        }
+    }
+
+    if (indice_CPkemon != -1) {
+        cout << "O Centro Pokémon mais próximo está em " << cidades[indice_CPkemon].nome
+             << " com uma distância de " << dist_CPokemon << endl;
+    } else {
+        cout << "Nenhum Centro Pokémon é alcançável." << endl;
+    }
+}
+
+int main_cidade(Cidade cidades[]) {
+    int numCidades = 0;
+
+    int numCidadesInput;
+    cout << "Digite o número de cidades: ";
+    cin >> numCidadesInput;
+
+    for (int i = 0; i < numCidadesInput; ++i) {
+        int codigo;
+        string nome;
+        bool CentroPokemon;
+
+        cout << "Digite o código da cidade: ";
+        cin >> codigo;
+        cin.ignore(); // Limpa o buffer de entrada
+        cout << "Digite o nome da cidade: ";
+        getline(cin, nome);
+        cout << "A cidade tem um Centro Pokémon? (1 para sim, 0 para não): ";
+        cin >> CentroPokemon;
+
+        adicionarCidade(cidades, numCidades, codigo, nome, CentroPokemon);
+    }
+
+    int numArestas;
+    cout << "Digite o número de caminhos entre as cidades: ";
+    cin >> numArestas;
+
+    for (int i = 0; i < numArestas; ++i) {
+        int deCodigo, paraCodigo, peso;
+
+        cout << "Digite o código da cidade de origem: ";
+        cin >> deCodigo;
+        cout << "Digite o código da cidade de destino: ";
+        cin >> paraCodigo;
+        cout << "Digite a distância: ";
+        cin >> peso;
+
+        adicionarAresta(cidades, numCidades, deCodigo, paraCodigo, peso);
+    }
+
+	return numCidades;
+}
+
 int main()
 {
+    Cidade cidades[MAX_CIDADES];
     treenodeptr ar_nome = NULL;
     treenodeptr ar_tipo = NULL;
     treenodeptr res = NULL;
-    no cidades[quantidade];
-    int num_cidades;
-    int opcao = -1;
+	int numCidades;
+	int opcao = -1;
     int terra = 0;
     int agua = 0;
     int fogo = 0;
@@ -324,18 +313,18 @@ int main()
             cout << "Agua: " << agua << endl;
             cout << "Terra: " << terra << endl;
             break;
-        case 6:
-			cout << "Digite a quantida de cidades que deseja cadastrar: ";
-			cin >> num_cidades;
-			cadastro_city(cidades, num_cidades);
+		case 6:
+            cout << "----------------------- Cadastrar cidades --------------------------" << endl;
+			numCidades = main_cidade(cidades);
 			break;
-        case 7:
-            exibir_city(cidades, num_cidades);
-            break;
-        case 8:
-            shortest_path_dijkstra(cidades,num_cidades,0,num_cidades);
-            break;
-        default:
+		case 7:
+            cout << "------------- Menor caminho ate um centro pokemon ------------------" << endl;			
+    		int codigoInicial;
+    		cout << "Digite o código da cidade atual: ";
+    		cin >> codigoInicial;
+    		caminhoMaisCurtoDijkstra(cidades, numCidades, codigoInicial);
+			break;
+		default:
             cout << "Opcao Invalida!" << endl;
             break;
         }
