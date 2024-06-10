@@ -1,118 +1,55 @@
 #include <iostream>
+#include <cmath>
 using namespace std;
- 
-// Define Infinite (Using INT_MAX caused overflow problems)
-#define INF 10000
- 
-struct Point
-{
-        int x;
-        int y;
+
+struct Point {
+    int x, y;
 };
- 
-// To find orientation of ordered triplet (p, q, r).
-// The function returns following values
-// 0 --> p, q and r are colinear
-// 1 --> Clockwise
-// 2 --> Counterclockwise
-int orientation(Point p, Point q, Point r)
-{
-    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
- 
-    if (val == 0)
-        return 0; // colinear
-    return (val > 0) ? 1 : 2; // clock or counterclock wise
+
+// Função para calcular a área do triângulo
+float area_triangulo(Point a, Point b, Point c) {
+    float area = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
+    return abs(area) / 2.0;
 }
 
-void descobre(Point forma[], Point descobrir, int cont)
-{
-    bool encontrou = false;
+bool coordenadas_baricentricas(Point p, Point vertices[]) {
+    float area1 = area_triangulo(vertices[0], vertices[1], vertices[2]);
+    float area2 = area_triangulo(vertices[0], vertices[2], vertices[3]);
 
-    for (int i = 0; i < cont; i++)
-    {
-        if (forma[i].x > descobrir.x && descobrir.x < forma[i].x && forma[i].y > descobrir.y < forma[i].y)
-        {
-            cout << "DENTRO" << endl;
-            encontrou = true;
-        }
+    // Coordenadas baricêntricas do primeiro triangulo
+    float l11 = area_triangulo(p, vertices[1], vertices[2]) / area1;
+    float l12 = area_triangulo(vertices[0], p, vertices[2]) / area1;
+    float l13 = area_triangulo(vertices[0], vertices[1], p) / area1;
+
+    // Coordenadas baricêntricas do segundo triangulo
+    float l21 = area_triangulo(p, vertices[2], vertices[3]) / area2;
+    float l22 = area_triangulo(vertices[0], p, vertices[3]) / area2;
+    float l23 = area_triangulo(vertices[0], vertices[2], p) / area2;
+
+    bool dentro_primeiro_triangulo = (l11 >= 0 && l12 >= 0 && l13 >= 0 && (l11 + l12 + l13) == 1);
+    bool dentro_segundo_triangulo = (l21 >= 0 && l22 >= 0 && l23 >= 0 && (l21 + l22 + l23) == 1);
+
+    // Ou pq se tiver dentro de um triangulo é pq esta dentro da area
+    return dentro_primeiro_triangulo || dentro_segundo_triangulo;
+}
+
+int main() {
+    Point vertices[4];
+    int quant;
+    Point p;
+
+    cin >> quant;
+    for (int i = 0; i < quant; ++i) {
+        cin >> vertices[i].x >> vertices[i].y;
     }
 
-    if (encontrou == false)
-    {
+    cin >> p.x >> p.y;
+
+    if (coordenadas_baricentricas(p, vertices)) {
+        cout << "DENTRO" << endl;
+    } else {
         cout << "!(DENTRO)" << endl;
     }
-    
-}
- 
-// Prints convex hull of a set of n points.
-void gift_wraping(Point points[], int n, Point find)
-{
-    // There must be at least 3 points
-    if (n < 3)
-        return;
- 
-    // Initialize Result
-    int next[n];
-    for (int i = 0; i < n; i++)
-        next[i] = -1;
- 
-    // Find the leftmost point
-    int l = 0;
-    for (int i = 1; i < n; i++)
-        if (points[i].x < points[l].x)
-            l = i;
- 
-    // Start from leftmost point, keep moving counterclockwise
-    // until reach the start point again
-    int p = l, q;
-    do
-    {
-        // Search for a point 'q' such that orientation(p, i, q) is
-        // counterclockwise for all points 'i'
-        q = (p + 1) % n;
-        for (int i = 0; i < n; i++)
-            if (orientation(points[p], points[i], points[q]) == 2)
-                q = i;
- 
-        next[p] = q; // Add q to result as a next point of p
-        p = q; // Set p as q for next iteration
-    }
-    while (p != l);
- 
-    // Print Result
-    Point res[100];
-    int cont = 0;
-
-    for (int i = 0; i < n; i++)
-    {
-        if (next[i] != -1) {
-            cout << "(" << points[i].x << ", " << points[i].y << ")\n";
-            res[cont] = {points[i].x, points[i].y};
-            cont++;
-        }
-    }
-
-    descobre(res, find, cont);
-}
- 
-// Driver program to test above functions
-int main()
-{
-    Point points[100];
-    Point find;
-    int nPontos;
-
-    cin >> nPontos;
-
-    for (int i = 0; i < nPontos; ++i) {
-        cin >> points[i].x >> points[i].y;
-    }
-    
-    cin >> find.x >> find.y;
-
-    gift_wraping(points, nPontos, find);
-
-
 
     return 0;
 }
