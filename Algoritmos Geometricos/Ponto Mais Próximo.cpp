@@ -26,7 +26,6 @@ int main()
 
     for (int i = 0; i < n; i++)
     {
-        // Descobre o proximo ponto para calcular a distancia
         distance[i] = sqrt(pow(points[i].x - find.x, 2) + pow(points[i].y - find.y, 2));
     }
     
