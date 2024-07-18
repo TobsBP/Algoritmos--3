@@ -1,20 +1,21 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <cmath>
+
 using namespace std;
 
 int MAX_CIDADES = 100;
+int INFINITO = 9999999;
 
-struct pokemon
-{
+struct pokemon {
     string nome;
     string tipo;
-    int local[1];
+    int local[2];  // Localização agora tem 2 elementos para x e y
     int codigo;
 };
 
-struct treenode
-{
+struct treenode {
     pokemon new_pokemon;
     treenode *left;
     treenode *right;
@@ -34,64 +35,58 @@ struct Cidade {
 
 typedef treenode *treenodeptr;
 
-void insert_nome(treenodeptr &arvore, pokemon new_pokemon)
-{
-	if(arvore == NULL){ 
-		arvore = new treenode;
-        arvore -> new_pokemon = new_pokemon; 
-		arvore -> left = NULL; 
-		arvore -> right = NULL;
-	}else if(arvore -> new_pokemon.nome > new_pokemon.nome)
-		insert_nome(arvore -> left, new_pokemon); 
-	else
-		insert_nome(arvore -> right, new_pokemon);
+void insert_nome(treenodeptr &arvore, pokemon new_pokemon) {
+    if (arvore == NULL) {
+        arvore = new treenode;
+        arvore->new_pokemon = new_pokemon;
+        arvore->left = NULL;
+        arvore->right = NULL;
+    } else if (arvore->new_pokemon.nome > new_pokemon.nome) {
+        insert_nome(arvore->left, new_pokemon);
+    } else {
+        insert_nome(arvore->right, new_pokemon);
+    }
 }
 
-void insert_tipo(treenodeptr &arvore, pokemon new_pokemon)
-{
-	if(arvore == NULL){ 
-		arvore = new treenode;
-        arvore -> new_pokemon = new_pokemon; 
-		arvore -> left = NULL; 
-		arvore -> right = NULL;
-	}else if(arvore -> new_pokemon.tipo > new_pokemon.tipo)
-		insert_tipo(arvore -> left, new_pokemon); 
-	else
-		insert_tipo(arvore -> right, new_pokemon);
+void insert_tipo(treenodeptr &arvore, pokemon new_pokemon) {
+    if (arvore == NULL) {
+        arvore = new treenode;
+        arvore->new_pokemon = new_pokemon;
+        arvore->left = NULL;
+        arvore->right = NULL;
+    } else if (arvore->new_pokemon.tipo > new_pokemon.tipo) {
+        insert_tipo(arvore->left, new_pokemon);
+    } else {
+        insert_tipo(arvore->right, new_pokemon);
+    }
 }
 
-void mostraInfo(treenodeptr &arvore)
-{
-    cout << "Nome: " << arvore -> new_pokemon.nome << endl;
-    cout << "Tipo: " << arvore -> new_pokemon.tipo << endl;
-    cout << "Codigo: " << arvore -> new_pokemon.codigo << endl;
-    cout << "Localização: x = " << arvore -> new_pokemon.local[0] << " Localização: y = " << arvore -> new_pokemon.local[1] << endl;
+void mostraInfo(treenodeptr &arvore) {
+    cout << "Nome: " << arvore->new_pokemon.nome << endl;
+    cout << "Tipo: " << arvore->new_pokemon.tipo << endl;
+    cout << "Codigo: " << arvore->new_pokemon.codigo << endl;
+    cout << "Localização: x = " << arvore->new_pokemon.local[0] << " y = " << arvore->new_pokemon.local[1] << endl;
 }
 
-void exibir(treenodeptr &arvore)
-{
-    if (arvore != NULL)
-    {
+void exibir(treenodeptr &arvore) {
+    if (arvore != NULL) {
         exibir(arvore->left);
         mostraInfo(arvore);
         exibir(arvore->right);
     }
 }
 
-void tdestruir(treenodeptr &arvore)
-{
-    if (arvore != NULL)
-    {
-        tdestruir(arvore->left);        
+void tdestruir(treenodeptr &arvore) {
+    if (arvore != NULL) {
+        tdestruir(arvore->left);
         tdestruir(arvore->right);
         delete arvore;
     }
     arvore = NULL;
 }
 
-void menu()
-{
-    setlocale(LC_ALL, "Portugese");
+void menu() {
+    setlocale(LC_ALL, "Portuguese");
     cout << "------------------------Selecione uma opção-----------------------" << endl;
     cout << "1 - Inserir Pokemon" << endl;
     cout << "2 - Encontrar Pokemon por nome" << endl;
@@ -99,24 +94,25 @@ void menu()
     cout << "4 - Exibir Pokemons por tipo" << endl;
     cout << "5 - Exibir quantos Pokemons tem de cada tipo" << endl;
     cout << "6 - Cadastrar cidades" << endl;
-    cout << "7 - Menor Caminho ate um centro Pokemon" << endl;    
-	cout << "0 - Sair" << endl;
+    cout << "7 - Menor Caminho até um centro Pokemon" << endl;
+    cout << "8 - Quantidade de Pokemons em um raio de 100 metros da Pokedex" << endl;
+    cout << "0 - Sair" << endl;
     cout << "--------------------------------------------------------------------" << endl;
 }
 
-treenodeptr search(treenodeptr arvore, string pokemon_nome)
-{
-	if(arvore == NULL)
-		return NULL; 
-    else if(arvore -> new_pokemon.nome == pokemon_nome)
-		return arvore;
-    else if(arvore -> new_pokemon.nome > pokemon_nome)
-		return search(arvore -> left, pokemon_nome); 
+treenodeptr search(treenodeptr arvore, const string &pokemon_nome) {
+    if (arvore == NULL)
+        return NULL;
+    else if (arvore->new_pokemon.nome == pokemon_nome)
+        return arvore;
+    else if (arvore->new_pokemon.nome > pokemon_nome)
+        return search(arvore->left, pokemon_nome);
     else
-		return search(arvore -> right, pokemon_nome); 
+        return search(arvore->right, pokemon_nome);
 }
 
-void adicionarCidade(Cidade cidades[], int &numCidades, int codigo, string &nome, bool CentroPokemon) {
+void adicionarCidade(Cidade cidades[], int &numCidades, int codigo, 
+                                const string &nome, bool CentroPokemon) {
     if (numCidades < MAX_CIDADES) {
         cidades[numCidades++] = {codigo, nome, CentroPokemon};
     } else {
@@ -124,7 +120,8 @@ void adicionarCidade(Cidade cidades[], int &numCidades, int codigo, string &nome
     }
 }
 
-void adicionarAresta(Cidade cidades[], int numCidades, int deCodigo, int paraCodigo, int peso) {
+void adicionarAresta(Cidade cidades[], int numCidades, int deCodigo,
+                                 int paraCodigo, int peso) {
     for (int i = 0; i < numCidades; ++i) {
         if (cidades[i].codigo == deCodigo) {
             cidades[i].adj.push_back({paraCodigo, peso});
@@ -148,7 +145,7 @@ void caminhoMaisCurtoDijkstra(Cidade cidades[], int numCidades, int codigoInicia
     int pai[MAX_CIDADES];
 
     for (int i = 0; i < MAX_CIDADES; ++i) {
-        distancia[i] = 9999999;
+        distancia[i] = INFINITO;
         pai[i] = -1;
     }
 
@@ -166,15 +163,14 @@ void caminhoMaisCurtoDijkstra(Cidade cidades[], int numCidades, int codigoInicia
         list<Aresta>::iterator it;
         for (it = cidades[v].adj.begin(); it != cidades[v].adj.end(); ++it) {
             int indiceDestino = encontrarIndiceCidade(cidades, numCidades, it->destino);
-            if (distancia[indiceDestino] > distancia[v] + it->peso) {
+            if (indiceDestino != -1 && distancia[indiceDestino] > distancia[v] + it->peso) {
                 distancia[indiceDestino] = distancia[v] + it->peso;
                 pai[indiceDestino] = v;
             }
         }
 
-
         v = -1;
-        int dist = 9999999;
+        int dist = INFINITO;
         for (int u = 0; u < vertices; ++u) {
             if (!intree[u] && distancia[u] < dist) {
                 dist = distancia[u];
@@ -184,18 +180,22 @@ void caminhoMaisCurtoDijkstra(Cidade cidades[], int numCidades, int codigoInicia
         if (v == -1) break; // não há mais nós para processar
     }
 
-    int dist_CPokemon = 9999999;
-    int indice_CPkemon = -1;
+    int dist_CPokemon = INFINITO;
+    int indice_CPokemon = -1;
     for (int u = 0; u < vertices; ++u) {
         if (cidades[u].CentroPokemon && distancia[u] < dist_CPokemon) {
             dist_CPokemon = distancia[u];
-            indice_CPkemon = u;
+            indice_CPokemon = u;
         }
     }
 
-    if (indice_CPkemon != -1) {
-        cout << "O Centro Pokémon mais próximo está em " << cidades[indice_CPkemon].nome
-             << " com uma distância de " << dist_CPokemon << endl;
+    if (indice_CPokemon != -1) {
+        if (dist_CPokemon == 0)
+        {
+            cout << "Na cidade em que você está tem um centro Pokemon" << endl;
+        }else
+            cout << "O Centro Pokémon mais próximo está em " << cidades[indice_CPokemon].nome
+                 << " com uma distância de " << dist_CPokemon << "Km" << endl;
     } else {
         cout << "Nenhum Centro Pokémon é alcançável." << endl;
     }
@@ -241,64 +241,112 @@ int main_cidade(Cidade cidades[]) {
         adicionarAresta(cidades, numCidades, deCodigo, paraCodigo, peso);
     }
 
-	return numCidades;
+    return numCidades;
+}
+// Função para calcular a distância Euclidiana entre dois pontos
+int calcularDistancia(int x1, int y1, int x2, int y2) {
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-int main()
-{
+// Função para contar quantos Pokemons estão dentro de um raio de 100 metros
+int contarPokemonNoRaioRecursivo(treenodeptr arvore, int x_pokedex, 
+                                            int y_pokedex, int raio) {
+    if (arvore == NULL) {
+        return 0;
+    }
+
+    int distancia = calcularDistancia(x_pokedex, y_pokedex, 
+                            arvore->new_pokemon.local[0], arvore->new_pokemon.local[1]);
+    int count = 0;
+
+    if (distancia <= raio) {
+        count = 1;
+    }
+
+    count += contarPokemonNoRaioRecursivo(arvore->left, x_pokedex, y_pokedex, raio);
+    count += contarPokemonNoRaioRecursivo(arvore->right, x_pokedex, y_pokedex, raio);
+
+    return count;
+}
+
+// Função principal para contar Pokemons dentro de um raio de 100 metros
+int contarPokemonNoRaio(treenodeptr arvore, int x_pokedex, int y_pokedex) {
+    if (arvore == NULL) {
+        return 0;
+    }
+
+    int raio = 100;
+    return contarPokemonNoRaioRecursivo(arvore, x_pokedex, y_pokedex, raio);
+}
+
+// Função principal e demais partes do código permanecem inalteradas...
+
+int main() {
     Cidade cidades[MAX_CIDADES];
     treenodeptr ar_nome = NULL;
     treenodeptr ar_tipo = NULL;
     treenodeptr res = NULL;
-	int numCidades;
-	int opcao = -1;
+    int numCidades;
+    int opcao = -1;
     int terra = 0;
     int agua = 0;
     int fogo = 0;
-    pokemon aux;
+    int planta = 0;
+    int outros = 0;
 
-    while (opcao != 0)
-    {
+    while (opcao != 0) {
         menu();
-        cout << "Opção: "; cin >> opcao;
-            cout << endl;
+        cout << "Opção: ";
+        cin >> opcao;
+        cout << endl;
 
-        switch (opcao)
-        {
+        switch (opcao) {
         case 0:
             cout << "Programa finalizado!" << endl;
             break;
-        case 1:
+        case 1: {
+            pokemon new_pokemon;
             cout << "Digite o nome do Pokemon: ";
-            cin >> aux.nome;
-            cout << "Digite o tipo do Pokemon (Terra/Fogo/Agua): ";
-            cin >> aux.tipo;
-            cout << "Digite a localização do Pokemon: ";
-            cin >> aux.local[0] >> aux.local[1];
-            cout << "Digite o numero do Pokemon: ";
-            cin >> aux.codigo;
+            cin.ignore(); // Limpa o buffer de entrada
+            getline(cin, new_pokemon.nome);
+            cout << "Digite o tipo do Pokemon (Terra/Fogo/Agua/Planta): ";
+            getline(cin, new_pokemon.tipo);
+            cout << "Digite a localização do Pokemon x: ";
+            cin >> new_pokemon.local[0];
+            cout << "Digite a localização do Pokemon y: ";
+            cin >> new_pokemon.local[1];
+            cout << "Digite o número do Pokemon: ";
+            cin >> new_pokemon.codigo;
 
-            if (aux.tipo == "Terra")
+            if (new_pokemon.tipo == "Terra")
                 terra++;
-            else if(aux.tipo == "Agua")
+            else if(new_pokemon.tipo == "Agua")
                 agua++;
-            else if(aux.tipo == "Fogo")
+            else if(new_pokemon.tipo == "Fogo")
                 fogo++;
+            else if(new_pokemon.tipo == "Planta")
+                planta++;
+            else
+                outros++;
 
-            insert_nome(ar_nome, aux);
-            insert_tipo(ar_tipo, aux);
+            insert_nome(ar_nome, new_pokemon);
+            insert_tipo(ar_tipo, new_pokemon);
             break;
-        case 2:
+        }
+        case 2: {
+            string pokemon_nome;
             cout << "Digite o nome do Pokemon que deseja encontrar: ";
-            cin >> aux.nome; cout << endl;
-            res = search(ar_nome, aux.nome);
+            cin.ignore(); // Limpa o buffer de entrada
+            getline(cin, pokemon_nome);
+            cout << endl;
+            res = search(ar_nome, pokemon_nome);
 
             if (res == NULL)
                 cout << "Pokemon não encontrado!" << endl;
             else
                 cout << "Pokemon encontrado!" << endl;
-
             break;
+        }
         case 3:
             cout << "------------------ Pokemons Cadastrados por nomes ------------------" << endl;
             exibir(ar_nome);
@@ -312,25 +360,40 @@ int main()
             cout << "Fogo: " << fogo << endl;
             cout << "Agua: " << agua << endl;
             cout << "Terra: " << terra << endl;
+            cout << "Planta: " << planta << endl;
+            cout << "Outros: " << outros << endl;
             break;
-		case 6:
+        case 6:
             cout << "----------------------- Cadastrar cidades --------------------------" << endl;
-			numCidades = main_cidade(cidades);
-			break;
-		case 7:
-            cout << "------------- Menor caminho ate um centro pokemon ------------------" << endl;			
-    		int codigoInicial;
-    		cout << "Digite o código da cidade atual: ";
-    		cin >> codigoInicial;
-    		caminhoMaisCurtoDijkstra(cidades, numCidades, codigoInicial);
-			break;
-		default:
-            cout << "Opcao Invalida!" << endl;
+            numCidades = main_cidade(cidades);
+            break;
+        case 7:
+            cout << "------------- Menor caminho até um centro Pokemon ------------------" << endl;
+            int codigoInicial;
+            cout << "Digite o código da cidade atual: ";
+            cin >> codigoInicial;
+            caminhoMaisCurtoDijkstra(cidades, numCidades, codigoInicial);
+            break;
+        case 8: {
+            cout << "---------- Quantidade de Pokemons em um raio de 100 metros ----------" << endl;
+            int x_pokedex, y_pokedex;
+            cout << "Digite a coordenada x da Pokedex: ";
+            cin >> x_pokedex;
+            cout << "Digite a coordenada y da Pokedex: ";
+            cin >> y_pokedex;
+
+            int numPokemons = contarPokemonNoRaio(ar_nome, x_pokedex, y_pokedex);
+            cout << "Número de Pokemons dentro do raio de 100 metros: " << numPokemons << endl;
+            break;
+        }
+        default:
+            cout << "Opção Inválida!" << endl;
             break;
         }
     }
 
+    tdestruir(ar_nome);
     tdestruir(ar_tipo);
-    
+
     return 0;
 }
